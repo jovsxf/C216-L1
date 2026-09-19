@@ -1,0 +1,8 @@
+*.py[cod]
+*.so
+.venv/
+venv/
+.env
+.git/
+.pytest_cache/
+.coverage
