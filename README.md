@@ -1,8 +1,8 @@
-\# C216-L1
+# C216-L1
 
 
 
-\## Execução dos testes
+## Execução dos testes
 
 
 
@@ -10,7 +10,7 @@ Os testes automatizados do backend são executados utilizando o Pytest.
 
 
 
-\### Utilizando Poetry
+### Utilizando Poetry
 
 
 
