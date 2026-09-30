@@ -8,13 +8,14 @@ help:
 	@echo "Comandos disponiveis:"
 	@echo "  make install        - Instala as dependencias"
 	@echo "  make run            - Executa a aplicacao localmente"
-	@echo "  make test           - Executa os testes"
+	@echo "  make test           - Executa os testes automatizados com Pytest"
 	@echo "  make check          - Verifica a configuracao do Poetry"
 	@echo "  make docker-build   - Constroi as imagens Docker"
 	@echo "  make docker-up      - Inicia os containers"
 	@echo "  make docker-down    - Para e remove os containers"
 	@echo "  make docker-logs    - Exibe os logs dos containers"
 	@echo "  make docker-restart - Reinicia os containers"
+
 install:
 	cd $(BACKEND_DIR) && $(POETRY) install --no-root
 
