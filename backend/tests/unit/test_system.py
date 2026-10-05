@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from main import check_database, home
+from routes.system import check_database, home
 
 
 @pytest.fixture
@@ -34,7 +34,10 @@ def test_database_uses_environment_configuration(
     monkeypatch.setenv("DATABASE_HOST", database_host)
     monkeypatch.setenv("DATABASE_PORT", database_port)
 
-    with patch("main.psycopg2.connect", return_value=mock_connection) as mock_connect:
+    with patch(
+        "routes.system.psycopg2.connect",
+        return_value=mock_connection,
+    ) as mock_connect:
         response = check_database()
 
     assert response["database"] == "Conexão realizada com sucesso!"
@@ -47,14 +50,20 @@ def test_database_uses_environment_configuration(
 
 
 def test_database_connection_success(mock_connection):
-    with patch("main.psycopg2.connect", return_value=mock_connection):
+    with patch(
+        "routes.system.psycopg2.connect",
+        return_value=mock_connection,
+    ):
         response = check_database()
 
     assert response["database"] == "Conexão realizada com sucesso!"
 
 
 def test_database_connection_is_closed(mock_connection):
-    with patch("main.psycopg2.connect", return_value=mock_connection):
+    with patch(
+        "routes.system.psycopg2.connect",
+        return_value=mock_connection,
+    ):
         check_database()
 
     mock_connection.close.assert_called_once()
@@ -64,7 +73,7 @@ def test_database_connection_error():
     error_message = "Banco de dados indisponível"
 
     with patch(
-        "main.psycopg2.connect",
+        "routes.system.psycopg2.connect",
         side_effect=Exception(error_message),
     ):
         response = check_database()
