@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from backend.app.database.session import engine
+from app.database.session import engine
 
 router = APIRouter(tags=["system"])
 

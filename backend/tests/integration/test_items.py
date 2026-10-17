@@ -4,9 +4,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from backend.app.database.base import Base
-from backend.app.database.session import get_db
-from backend.app.main import app
+from app.database.base import Base
+from app.database.session import get_db
+from app.main import app
 
 test_engine = create_engine(
     "sqlite://",

@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
 
-from backend.app.main import app
+from app.main import app
 
 client = TestClient(app)
 
@@ -19,7 +19,7 @@ def test_database_endpoint_success():
     connection = MagicMock()
     context = MagicMock()
     context.__enter__.return_value = connection
-    with patch("routes.system.engine.connect", return_value=context) as connect:
+    with patch("app.api.routes.system.engine.connect", return_value=context) as connect:
         response = client.get("/database")
 
     assert response.status_code == 200
@@ -32,7 +32,7 @@ def test_database_endpoint_success():
 
 def test_database_endpoint_error():
     with patch(
-        "routes.system.engine.connect",
+        "app.api.routes.system.engine.connect",
         side_effect=SQLAlchemyError("Banco de dados indisponível"),
     ):
         response = client.get("/database")

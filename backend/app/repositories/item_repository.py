@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.app.models.item import Item
+from app.models.item import Item
 
 
 class ItemRepository:

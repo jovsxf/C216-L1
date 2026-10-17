@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from backend.app.repositories.item_repository import ItemRepository
-from backend.app.schemas.item import ItemCreate, ItemUpdate
+from app.repositories.item_repository import ItemRepository
+from app.schemas.item import ItemCreate, ItemUpdate
 
 
 def get_items(db: Session):

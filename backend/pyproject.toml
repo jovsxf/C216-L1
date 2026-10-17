@@ -38,4 +38,4 @@ line-length = 88
 target-version = "py311"
 
 [tool.ruff.lint.per-file-ignores]
-"routes/items.py" = ["B008"]
+"app/api/routes/items.py" = ["B008"]

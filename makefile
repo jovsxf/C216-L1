@@ -24,7 +24,7 @@ install:
 	cd $(BACKEND_DIR) && $(POETRY) install --no-root
 
 run:
-	cd $(BACKEND_DIR) && $(POETRY) run uvicorn main:app --reload
+	cd $(BACKEND_DIR) && $(POETRY) run uvicorn app.main:app --reload
 
 test:
 	cd $(BACKEND_DIR) && $(POETRY) run pytest

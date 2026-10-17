@@ -3,9 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from backend.app.database.base import Base
-from backend.app.schemas.item import ItemCreate, ItemUpdate
-from backend.app.services import item_service
+from app.database.base import Base
+from app.schemas.item import ItemCreate, ItemUpdate
+from app.services import item_service
 
 
 @pytest.fixture

@@ -6,13 +6,13 @@ Backend de exemplo com FastAPI para gerenciamento de itens.
 
 O código da aplicação fica em `backend/`:
 
-- `main.py`: inicializa o FastAPI e registra os routers.
-- `routes/`: endpoints HTTP para itens e informações do sistema.
-- `schemas/`: modelos Pydantic de entrada e saída.
-- `services/`: regras de gerenciamento dos itens.
-- `repositories/`: consultas e gravações do PostgreSQL via SQLAlchemy.
-- `models/`: modelos ORM usados para persistência.
-- `database/`: engine, sessões e dependência de banco da API.
+- `app/main.py`: inicializa o FastAPI e registra os routers.
+- `app/api/routes/`: endpoints HTTP para itens e informações do sistema.
+- `app/schemas/`: modelos Pydantic de entrada e saída.
+- `app/services/`: regras de gerenciamento dos itens.
+- `app/repositories/`: consultas e gravações via SQLAlchemy.
+- `app/models/`: modelos ORM usados para persistência.
+- `app/database/`: engine, sessões e dependência de banco da API.
 - `alembic/`: migrations versionadas do banco.
 - `tests/unit/`: testes unitários dos serviços e funções isoladas.
 - `tests/integration/`: testes dos endpoints usando o `TestClient` do FastAPI.
@@ -24,7 +24,7 @@ Os endpoints de itens usam `item_id` como parâmetro de caminho (`Path Parameter
 Dentro de `backend`, execute:
 
 ```bash
-poetry run uvicorn main:app --reload
+poetry run uvicorn app.main:app --reload
 ```
 
 Por padrão, a execução local usa SQLite em `backend/items.db`. Para usar PostgreSQL, configure `DATABASE_URL` (consulte `.env.example`) ou execute a stack via `docker compose up --build`. No Compose, a API aplica as migrations antes de iniciar.

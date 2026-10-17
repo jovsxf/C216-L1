@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from backend.app.API.items import router as items_router
-from backend.app.API.system import router as system_router
+from app.api.routes.items import router as items_router
+from app.api.routes.system import router as system_router
 
 app = FastAPI()
 
