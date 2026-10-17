@@ -1,8 +1,24 @@
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from main import app
-from services import item_service
+from backend.app.database.base import Base
+from backend.app.database.session import get_db
+from backend.app.main import app
+
+test_engine = create_engine(
+    "sqlite://",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+TestingSession = sessionmaker(bind=test_engine, autoflush=False, autocommit=False)
+
+
+def override_get_db():
+    with TestingSession() as db:
+        yield db
 
 
 client = TestClient(app)
@@ -10,8 +26,16 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def reset_items():
-    item_service.items.clear()
-    item_service.next_id = 1
+    Base.metadata.create_all(test_engine)
+    yield
+    Base.metadata.drop_all(test_engine)
+
+
+@pytest.fixture(autouse=True)
+def override_database():
+    app.dependency_overrides[get_db] = override_get_db
+    yield
+    app.dependency_overrides.clear()
 
 
 def test_get_items():

@@ -2,6 +2,8 @@ from pydantic import BaseModel
 
 
 class Item(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: int
     name: str
     description: str
