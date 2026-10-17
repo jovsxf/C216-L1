@@ -1,82 +1,32 @@
-import pytest
 from unittest.mock import MagicMock, patch
 
-from routes.system import check_database, home
+from sqlalchemy.exc import SQLAlchemyError
 
-
-@pytest.fixture
-def mock_connection():
-    """Cria uma conexão simulada com o banco de dados."""
-    connection = MagicMock()
-    return connection
+from app.api.routes.system import check_database, home
 
 
 def test_home_returns_success_message():
-    response = home()
-
-    assert response == {"message": "Backend funcionando!"}
+    assert home() == {"message": "Backend funcionando!"}
 
 
-@pytest.mark.parametrize(
-    "database_host,database_port",
-    [
-        ("localhost", "5432"),
-        ("database", "5432"),
-        ("127.0.0.1", "5433"),
-    ],
-)
-def test_database_uses_environment_configuration(
-    monkeypatch,
-    mock_connection,
-    database_host,
-    database_port,
-):
-    monkeypatch.setenv("DATABASE_HOST", database_host)
-    monkeypatch.setenv("DATABASE_PORT", database_port)
-
-    with patch(
-        "routes.system.psycopg2.connect",
-        return_value=mock_connection,
-    ) as mock_connect:
+def test_database_connection_success():
+    connection = MagicMock()
+    context = MagicMock()
+    context.__enter__.return_value = connection
+    with patch("app.api.routes.system.engine.connect", return_value=context) as connect:
         response = check_database()
-
-    assert response["database"] == "Conexão realizada com sucesso!"
-    mock_connect.assert_called_once()
-
-    connection_params = mock_connect.call_args.kwargs
-
-    assert connection_params["host"] == database_host
-    assert connection_params["port"] == database_port
-
-
-def test_database_connection_success(mock_connection):
-    with patch(
-        "routes.system.psycopg2.connect",
-        return_value=mock_connection,
-    ):
-        response = check_database()
-
-    assert response["database"] == "Conexão realizada com sucesso!"
-
-
-def test_database_connection_is_closed(mock_connection):
-    with patch(
-        "routes.system.psycopg2.connect",
-        return_value=mock_connection,
-    ):
-        check_database()
-
-    mock_connection.close.assert_called_once()
+    assert response == {"database": "Conexão realizada com sucesso!"}
+    connect.assert_called_once()
+    connection.execute.assert_called_once()
 
 
 def test_database_connection_error():
-    error_message = "Banco de dados indisponível"
-
     with patch(
-        "routes.system.psycopg2.connect",
-        side_effect=Exception(error_message),
+        "app.api.routes.system.engine.connect",
+        side_effect=SQLAlchemyError("Banco de dados indisponível"),
     ):
         response = check_database()
-
-    assert response["database"] == "Erro ao conectar ao banco"
-    assert response["error"] == error_message
+    assert response == {
+        "database": "Erro ao conectar ao banco",
+        "error": "Banco de dados indisponível",
+    }
