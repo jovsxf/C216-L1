@@ -1,6 +1,6 @@
 # C216-L1
 
-Backend de exemplo com FastAPI para gerenciamento de itens.
+Backend de exemplo com FastAPI e frontend React independente para gerenciamento de itens.
 
 ## Organização
 
@@ -40,3 +40,14 @@ poetry run pytest
 ```
 
 O workflow em `.github/workflows/` instala as dependências e executa toda a suíte em cada push e pull request.
+
+## Frontend (Prática 6)
+
+O frontend em `frontend/` usa React, Vite e Tailwind CSS. Nesta prática, os itens ficam somente em memória no navegador, sem chamadas ao backend.
+
+```bash
+make frontend-install
+make frontend-dev
+```
+
+Para validar o frontend, execute `make frontend-check`, `make frontend-test`, `make frontend-build` e `make frontend-test-e2e`. Na primeira execução E2E, instale o navegador com `npx --prefix frontend playwright install chromium`.
