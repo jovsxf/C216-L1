@@ -2,7 +2,15 @@ name: CI Backend
 
 on:
   push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
   pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
 
 jobs:
   test:
@@ -27,3 +35,7 @@ jobs:
       - name: Executar testes
         working-directory: backend
         run: poetry run pytest
+
+      - name: Verificar lint
+        working-directory: backend
+        run: poetry run ruff check .
