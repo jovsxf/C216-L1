@@ -14,14 +14,17 @@ class ItemRepository:
     def get(self, item_id: int) -> Item | None:
         return self.db.get(Item, item_id)
 
-    def create(self, name: str, description: str) -> Item:
+    def get_by_name(self, name: str) -> Item | None:
+        return self.db.scalars(select(Item).where(Item.name == name)).first()
+
+    def create(self, name: str, description: str | None) -> Item:
         item = Item(name=name, description=description)
         self.db.add(item)
         self.db.commit()
         self.db.refresh(item)
         return item
 
-    def update(self, item: Item, **changes: str) -> Item:
+    def update(self, item: Item, **changes: str | None) -> Item:
         for field, value in changes.items():
             setattr(item, field, value)
         self.db.commit()

@@ -1,33 +1,62 @@
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: dockerfile
-    container_name: c216-backend
-    ports:
-      - "8000:8000"
-    depends_on:
-      database:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql+psycopg://postgres:postgres@database:5432/c216_db
-
-  database:
+  db:
     image: postgres:16
-    container_name: c216-database
     environment:
-      POSTGRES_DB: c216_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-c216_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "5433:5432"
+      - "${DB_PORT:-5433}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d c216_db"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./backend
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      # Dentro da rede Docker o banco é acessado pelo nome do serviço ("db").
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-c216_db}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:${FRONTEND_PORT:-5173},http://127.0.0.1:${FRONTEND_PORT:-5173}}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/')",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      # O React roda no navegador do host: a API é acessada pela porta publicada.
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:${API_PORT:-8000}}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5173/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
 volumes:
   postgres_data:

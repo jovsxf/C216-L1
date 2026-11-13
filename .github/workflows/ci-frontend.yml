@@ -4,17 +4,23 @@ on:
   pull_request:
     paths:
       - "frontend/**"
+      - "backend/**"
+      - "compose.yml"
+      - "makefile"
       - ".github/workflows/ci-frontend.yml"
   push:
     branches:
       - main
     paths:
       - "frontend/**"
+      - "backend/**"
+      - "compose.yml"
+      - "makefile"
       - ".github/workflows/ci-frontend.yml"
 
 jobs:
   frontend:
-    name: Biome, Vitest, Build e Playwright
+    name: Biome, Vitest, Build e E2E full-stack
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,8 +46,9 @@ jobs:
         run: npm run build
       - name: Instalar Chromium para Playwright
         run: npx playwright install --with-deps chromium
-      - name: Executar testes E2E
-        run: npm run test:e2e
+      - name: Executar E2E full-stack (db + api + frontend)
+        working-directory: .
+        run: make e2e
       - name: Enviar relatório do Playwright
         if: failure()
         uses: actions/upload-artifact@v4

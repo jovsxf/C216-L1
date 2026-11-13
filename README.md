@@ -27,9 +27,9 @@ Dentro de `backend`, execute:
 poetry run uvicorn app.main:app --reload
 ```
 
-Por padrão, a execução local usa SQLite em `backend/items.db`. Para usar PostgreSQL, configure `DATABASE_URL` (consulte `.env.example`) ou execute a stack via `docker compose up --build`. No Compose, a API aplica as migrations antes de iniciar.
+Por padrão, a execução local usa SQLite em `backend/items.db`. Para usar PostgreSQL, configure `DATABASE_URL` (consulte `.env.example`) ou execute a stack completa com Docker Compose (veja abaixo).
 
-Use `make db-upgrade` para aplicar migrations localmente, `make db-migration msg="descricao"` para gerar uma revisão e `make lint` para verificar o estilo.
+Use `make db-upgrade-local` para aplicar migrations sem Docker, `make db-migration msg="descricao"` para gerar uma revisão e `make lint` para verificar o estilo.
 
 ## Executar os testes
 
@@ -41,13 +41,41 @@ poetry run pytest
 
 O workflow em `.github/workflows/` instala as dependências e executa toda a suíte em cada push e pull request.
 
-## Frontend (Prática 6)
+## Stack full-stack (Prática 7)
 
-O frontend em `frontend/` usa React, Vite e Tailwind CSS. Nesta prática, os itens ficam somente em memória no navegador, sem chamadas ao backend.
+O frontend React consome a API FastAPI, que persiste os itens no PostgreSQL.
 
-```bash
-make frontend-install
-make frontend-dev
+```text
+Navegador (React/Vite) :5173  --fetch + CORS-->  API FastAPI :8000  --SQLAlchemy-->  PostgreSQL (db:5432)
 ```
 
-Para validar o frontend, execute `make frontend-check`, `make frontend-test`, `make frontend-build` e `make frontend-test-e2e`. Na primeira execução E2E, instale o navegador com `npx --prefix frontend playwright install chromium`.
+- `frontend/src/services/items.js` concentra as chamadas `GET /items/` e `POST /items/` (URL em `VITE_API_URL`).
+- A API autoriza apenas as origens listadas em `CORS_ORIGINS` (`backend/app/core/config.py`).
+- Nomes duplicados retornam `409` com `{"detail": "Já existe um item com esse nome"}`; nomes vazios ou com mais de 100 caracteres retornam `422`.
+
+### Subir com Docker Compose
+
+```bash
+cp .env.example .env   # primeira vez
+make up-build          # db + api + frontend
+make db-upgrade        # aplica as migrations (Alembic)
+make ps                # todos devem ficar "healthy"
+```
+
+- Frontend: <http://localhost:5173>
+- API / Swagger: <http://localhost:8000/docs>
+
+O código é copiado para as imagens: após alterar o código, rode `make up-build` novamente.
+
+### Testes
+
+| Comando | O que executa |
+| --- | --- |
+| `make test` | Pytest do backend (SQLite em memória) |
+| `make frontend-test` | Vitest: unitários e integração com `fetch` mockado |
+| `make frontend-check` / `make frontend-build` | Biome / build do Vite |
+| `make e2e` | Playwright contra uma stack isolada (`lab-e2e`, portas 5174/8001/5434), removida ao final com `down -v` |
+| `make frontend-test-e2e` | Playwright contra a stack já no ar (`E2E_BASE_URL`, padrão `http://localhost:5173`) |
+| `make check-all` | Tudo acima (exige Docker) |
+
+Na primeira execução E2E, instale o navegador com `npx --prefix frontend playwright install chromium`.

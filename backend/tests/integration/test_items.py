@@ -150,3 +150,35 @@ def test_delete_item():
     get_response = client.get(f"/items/{item_id}")
 
     assert get_response.status_code == 404
+
+
+def test_post_item_without_description():
+    response = client.post("/items/", json={"name": "Caneta"})
+
+    assert response.status_code == 201
+    assert response.json()["description"] is None
+
+
+def test_post_item_with_duplicate_name_returns_409():
+    client.post("/items/", json={"name": "Notebook"})
+
+    response = client.post("/items/", json={"name": "Notebook"})
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "Já existe um item com esse nome"}
+
+
+@pytest.mark.parametrize("name", ["", "x" * 101])
+def test_post_item_with_invalid_name_returns_422(name):
+    response = client.post("/items/", json={"name": name})
+
+    assert response.status_code == 422
+
+
+def test_put_item_with_name_of_other_item_returns_409():
+    client.post("/items/", json={"name": "Notebook"})
+    item_id = client.post("/items/", json={"name": "Mouse"}).json()["id"]
+
+    response = client.put(f"/items/{item_id}", json={"name": "Notebook"})
+
+    assert response.status_code == 409

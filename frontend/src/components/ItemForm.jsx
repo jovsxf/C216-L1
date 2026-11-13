@@ -5,16 +5,27 @@ export function ItemForm({ onAdd }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const result = validateItem({ name, description });
     setErrors(result.errors);
+    setSubmitError("");
     if (Object.keys(result.errors).length > 0) return;
 
-    onAdd(result.values);
-    setName("");
-    setDescription("");
+    setSaving(true);
+    try {
+      await onAdd(result.values);
+      setName("");
+      setDescription("");
+    } catch (error) {
+      // Mantém o que foi digitado para o usuário corrigir.
+      setSubmitError(error.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -61,9 +72,18 @@ export function ItemForm({ onAdd }) {
           className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         />
       </div>
+      {submitError && (
+        <p
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          {submitError}
+        </p>
+      )}
       <button
         type="submit"
-        className="w-full rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
+        disabled={saving}
+        className="w-full rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         Adicionar
       </button>

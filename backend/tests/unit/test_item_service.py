@@ -69,3 +69,17 @@ def test_delete_item(db):
     )
     assert item_service.delete_item(db, item.id) is True
     assert item_service.get_item(db, item.id) is None
+
+
+def test_create_item_with_duplicate_name_raises(db):
+    item_service.create_item(db, ItemCreate(name="Notebook"))
+    with pytest.raises(item_service.DuplicateItemNameError):
+        item_service.create_item(db, ItemCreate(name="Notebook"))
+
+
+def test_update_item_keeping_own_name_is_allowed(db):
+    item = item_service.create_item(db, ItemCreate(name="Notebook"))
+    updated = item_service.update_item(
+        db, item.id, ItemCreate(name="Notebook", description="Nova")
+    )
+    assert updated.description == "Nova"
